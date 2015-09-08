@@ -1,0 +1,46 @@
+<openerp>
+    <data>
+        <!-- SCHEDULER FOR PROCESSING SCHEDULED VALIDATION OF RECON -->
+        <record forcecreate="True" id="ir_cron_scheduled_recons_vouchers_action" model="ir.cron">
+            <field name="name">Process Scheduled Recons Vouchers </field>
+            <field name="user_id" ref="base.user_root"/>
+            <field name="interval_number">5</field>
+            <field name="interval_type">minutes</field>
+            <field name="numbercall">-1</field>
+            <field eval="False" name="doall"/>
+            <field eval="'account.voucher'" name="model"/>
+            <field eval="'process_scheduled_validate'" name="function"/>
+            <field eval="'()'" name="args"/>
+        </record>
+
+
+        <record model="ir.ui.view" id="view_sale_receipt_form_qfx">
+            <field name="name">account.voucher.receipt.form.qfx</field>
+            <field name="model">account.voucher</field>
+            <field name="inherit_id" ref="account_voucher.view_vendor_receipt_form"/>
+            <field name="arch" type="xml">
+
+                <xpath expr="//field[@name='partner_id']" position="replace">
+                    <field name="partner_id" domain="[('customer','=',True)]" required="1" on_change="onchange_partner_id(partner_id, journal_id, amount, currency_id, type, date,filter_limit, context)" string="Customer" context="{'search_default_customer': 1}"/>
+                </xpath>
+
+                <xpath expr="//field[@name='amount']" position="replace">
+                    <field name="amount" class="oe_inline"
+                           string="Paid Amount" widget="monetary" options="{'currency_field': 'currency_id'}"
+                           on_change="onchange_amount(amount, payment_rate, partner_id, journal_id, currency_id, type, date, payment_rate_currency_id, company_id,filter_limit, context)"/>
+                </xpath>
+
+                <xpath expr="//field[@name='amount']" position="before">
+                    <field name="filter_limit" class="oe_inline"
+                                string="Open Balance Limit"
+                                widget="monetary" options="{'currency_field': 'currency_id'}"
+                                attrs="{'readonly':[('state','=','posted')]}"
+                                on_change="onchange_amount(amount, payment_rate, partner_id, journal_id, currency_id, type, date, payment_rate_currency_id, company_id,filter_limit, context)"/>
+                </xpath>
+                <xpath expr="//field[@name='journal_id']" position="after">
+                    <field name="schedule_validate" string="Schedule for Validation" attrs="{'invisible':[('state','=','posted')]}" />
+                </xpath>
+			</field>
+        </record>
+    </data>
+</openerp>
